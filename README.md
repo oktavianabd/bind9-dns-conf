@@ -9,7 +9,7 @@ hostname: ns1
 ip: 192.168.100.10
 
 1. Install bind9 packages
-# apt install bind9 bind9utils dnsutils
+apt install bind9 bind9utils dnsutils
 
 2. Copy named.conf.options and named.zones
 
@@ -20,7 +20,7 @@ hostname: ns2
 ip: 192.168.100.11
 
 1. Install bind9 packages
-# apt install bind9 bind9utils dnsutils
+apt install bind9 bind9utils dnsutils
 
 2. Copy named.conf.options
 
