@@ -1,8 +1,7 @@
-# bind9-dns-conf
-Example bind9/named configuration to build primary and secondary DNS server
+# Bind9 Primary and Secondary DNS Server Configuration Using Docker
+Example bind9/named configuration to build primary and secondary DNS server, then secondary DNS server deploy as a container using docker
 
-If DNS server is installed on docker (Ubuntu 22.04), please edit the config file of systemd-resolved, /etc/systemd/resolved.conf.
-
+***!Important, If DNS server is installed on docker (Ubuntu 22.04), please edit the config file of systemd-resolved, /etc/systemd/resolved.conf.***
 Uncomment the line DNSStubListener, and set it to no.
 
 ```
@@ -14,7 +13,7 @@ DNSStubListener=no
 Restart the sytemd-resolved service using `sudo systemctl restart systemd-resolved`.
 
 ## Primary-DNS Configuration
-Bind9 installed on Ubuntu OS 22.04
+Bind9 installed on baremetal Ubuntu OS 22.04 (not using docker)
 
 hostname - ip - domain_name : ns1 - 192.168.100.10/24 - home.arpa
 
@@ -85,13 +84,14 @@ zone "100.168.192.in-addr.arpa" {
 ```
 ## Secondary-DNS Configuration
 Bind9 installed as a container on docker
+
 hostname - ip - domain_name : ns2 - 192.168.100.11 - home.arpa
 
 1. Install docker and docker-compose
 ```
 apt install docker.io docker-compose
 ```
-2. Since bind9 installed as a container please uncomment the line DNSStubListener /etc/systemd/resolved.conf.
+2. Since bind9 installed as a container please uncomment the line DNSStubListener on /etc/systemd/resolved.conf.
 
 Uncomment the line DNSStubListener, and set it to no.
 
