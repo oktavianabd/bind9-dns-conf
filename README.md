@@ -24,7 +24,7 @@ apt install bind9 bind9utils dnsutils
 2. Edit /etc/bind/named.conf.options
 ```
 options {
-        directory "/var/lib/bind";
+        directory "/var/cache/bind";
         listen-on { 192.168.100.10; };
         allow-query { any; };
         recursion no;
@@ -55,8 +55,12 @@ logging {
 include "/etc/bind/named.zones";
 ```
 Please refer to /etc/apparmor.d/usr.sbin.named for default directory setting of bind9 logging and zones files
-
-3. Create named.zones on /etc/bind
+4. Create /var/log/named directory and change owner to bind
+```
+mkdir /var/log/named
+chown bind /var/log/named
+```
+5. Create named.zones on /etc/bind
 ```
 acl "slaves" {
           192.168.100.11;
@@ -82,6 +86,64 @@ zone "100.168.192.in-addr.arpa" {
      };
 };
 ```
+6. Check configuration file if there is any error
+```
+named-checkconf named.conf.options
+```
+7. Create home.arpa.db on /var/cache/bind
+```
+$TTL    604800
+@       IN      SOA     ns1.home.arpa. admin.home.arpa. (
+                  3     ; Serial
+             604800     ; Refresh
+              86400     ; Retry
+            2419200     ; Expire
+             604800 )   ; Negative Cache TTL
+;
+; name servers - NS records
+     IN      NS      ns1.home.arpa.
+     IN      NS      ns2.home.arpa.
+
+; name servers - A records
+ns1.home.arpa.          IN      A       192.168.100.110
+ns2.home.arpa.          IN      A       192.168.100.111
+
+; 192.168.100.0/24 - A records
+host1.home.arpa.        IN      A      192.168.100.112
+host2.home.arpa.        IN      A      192.168.100.113
+
+```
+8. Create 100.168.192-addr.arpa.db on /var/cache/bind
+```
+$TTL    604800
+@       IN      SOA     home.arpa. admin.home.arpa. (
+                              3         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+; name servers
+      IN      NS      ns1.home.arpa.
+      IN      NS      ns2.home.arpa.
+
+; PTR Records
+110             IN      PTR     ns1.home.arpa.    ; 192.168.100.110
+111             IN      PTR     ns2.home.arpa.    ; 192.168.100.111
+112             IN      PTR     host1.home.arpa.  ; 192.168.100.112
+113             IN      PTR     host2.home.arpa.  ; 192.168.100.113
+```
+9. Check zone file if there is any error
+```
+#named-checkzone home.arpa home.arpa.db
+zone home.arpa/IN: loaded serial 3
+OK
+
+#named-checkzone 100.168.192-addr.arpa 100.168.192-addr.arpa.db
+zone 100.168.192-addr.arpa/IN: loaded serial 3
+OK
+```
+10. Restart  
+
 ## Secondary-DNS Configuration
 Bind9 installed as a container on docker
 
