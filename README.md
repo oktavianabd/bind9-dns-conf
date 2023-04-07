@@ -19,7 +19,7 @@ hostname - ip - domain_name : ns1 - 192.168.100.10/24 - home.arpa
 
 1. Install bind9 packages
 ```
-apt install bind9 bind9utils dnsutils
+apt install bind9 bind9utils dnsutils bind9-doc
 ```
 2. Edit /etc/bind/named.conf.options
 ```
@@ -105,13 +105,12 @@ $TTL    604800
      IN      NS      ns2.home.arpa.
 
 ; name servers - A records
-ns1.home.arpa.          IN      A       192.168.100.110
-ns2.home.arpa.          IN      A       192.168.100.111
+ns1.home.arpa.          IN      A       192.168.100.10
+ns2.home.arpa.          IN      A       192.168.100.11
 
 ; 192.168.100.0/24 - A records
-host1.home.arpa.        IN      A      192.168.100.112
-host2.home.arpa.        IN      A      192.168.100.113
-
+host1.home.arpa.        IN      A      192.168.100.12
+host2.home.arpa.        IN      A      192.168.100.13
 ```
 8. Create 100.168.192-addr.arpa.db on /var/cache/bind
 ```
@@ -127,10 +126,10 @@ $TTL    604800
       IN      NS      ns2.home.arpa.
 
 ; PTR Records
-110             IN      PTR     ns1.home.arpa.    ; 192.168.100.110
-111             IN      PTR     ns2.home.arpa.    ; 192.168.100.111
-112             IN      PTR     host1.home.arpa.  ; 192.168.100.112
-113             IN      PTR     host2.home.arpa.  ; 192.168.100.113
+10             IN      PTR     ns1.home.arpa.    ; 192.168.100.110
+11             IN      PTR     ns2.home.arpa.    ; 192.168.100.11
+12             IN      PTR     host1.home.arpa.  ; 192.168.100.12
+13             IN      PTR     host2.home.arpa.  ; 192.168.100.13
 ```
 9. Check zone file if there is any error
 ```
@@ -142,7 +141,10 @@ OK
 zone 100.168.192-addr.arpa/IN: loaded serial 3
 OK
 ```
-10. Restart  
+10. Restart bind9 service
+```
+systemctl restart bind9
+```
 
 ## Secondary-DNS Configuration
 Bind9 installed as a container on docker
@@ -251,6 +253,23 @@ docker-compose up -d
 ```
 ## Test Bind9
 ```
-nslookup ns1 192.168.100.10
-nslookup ns2 192.168.100.11
+root@ns1:/var/cache/bind# nslookup 192.168.100.10 192.168.100.10
+10.100.168.192.in-addr.arpa     name = ns1.home.arpa.
+
+root@ns1:/var/cache/bind# nslookup 192.168.100.11 192.168.100.10
+11.100.168.192.in-addr.arpa     name = ns2.home.arpa.
+
+root@ns1:/var/cache/bind# nslookup ns1 192.168.100.10
+Server:         192.168.100.10
+Address:        192.168.100.10#53
+
+Name:   ns1.home.arpa
+Address: 192.168.100.10
+
+root@ns1:/var/cache/bind# nslookup ns2 192.168.100.10
+Server:         192.168.100.10
+Address:        192.168.100.10#53
+
+Name:   ns2.home.arpa
+Address: 192.168.100.11
 ```
